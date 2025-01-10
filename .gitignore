@@ -4,3 +4,7 @@
 config.js
 coverage
 dist
+/.idea/.gitignore
+/.idea/jwt-pizza-service.iml
+/.idea/modules.xml
+/.idea/vcs.xml
