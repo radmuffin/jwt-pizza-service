@@ -1,6 +1,6 @@
 {
   "collectCoverage": true,
-  "coverageReporters": ["json-summary", "text"],
+  "coverageReporters": ["json-summary", "text", "text-summary"],
   "coverageThreshold": {
     "global": {
       "branches": 80,
