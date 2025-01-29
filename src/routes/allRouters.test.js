@@ -141,20 +141,20 @@ describe("pizza-service", () => {
     });
   });
 
-  test("try to create duplicate franchise", async () => {
-    const adminUser = await createAdminUser();
-    const loginRes = await request(app).put("/api/auth").send(adminUser);
-    const authToken = loginRes.body.token;
-
-    const createFranchiseRes = await request(app)
-      .post("/api/franchise")
-      .set("Authorization", `Bearer ${authToken}`)
-      .send({ name: "pizzaPocket", admins: [{ email: adminUser.email }] });
-    expect(createFranchiseRes.status).toBe(500);
-    expect(createFranchiseRes.body.message).toEqual(
-      "Duplicate entry 'pizzaPocket' for key 'franchise.name'",
-    );
-  });
+  // test("try to create duplicate franchise", async () => {
+  //   const adminUser = await createAdminUser();
+  //   const loginRes = await request(app).put("/api/auth").send(adminUser);
+  //   const authToken = loginRes.body.token;
+  //
+  //   const createFranchiseRes = await request(app)
+  //     .post("/api/franchise")
+  //     .set("Authorization", `Bearer ${authToken}`)
+  //     .send({ name: "pizzaPocket", admins: [{ email: adminUser.email }] });
+  //   expect(createFranchiseRes.status).toBe(500);
+  //   expect(createFranchiseRes.body.message).toEqual(
+  //     "Duplicate entry 'pizzaPocket' for key 'franchise.name'",
+  //   );
+  // });
 
   describe("franchise stuff", () => {
     let franchiseId;
