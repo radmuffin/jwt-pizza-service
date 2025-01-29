@@ -4,24 +4,23 @@ const app = require("../service");
 const testUser = { name: "pizza diner", email: "reg@test.com", password: "a" };
 let testUserAuthToken;
 let testAdminAuthToken;
-// let franchiseId;
-// let testAdminUser;
+let testAdminUser;
 
-describe("pizza-service allows", () => {
+describe("pizza-service", () => {
   beforeEach(async () => {
     testUser.email = Math.random().toString(36).substring(2, 12) + "@test.com";
     const registerRes = await request(app).post("/api/auth").send(testUser);
     testUserAuthToken = registerRes.body.token;
     expectValidJwt(testUserAuthToken);
 
-    // testAdminUser = await createAdminUser();
-    // const adminRegisterRes = await request(app)
-    //   .post("/api/auth")
-    //   .send(testAdminUser);
-    // testAdminAuthToken = adminRegisterRes.body.token;
-    // expect(adminRegisterRes.status).toBe(200);
-    // expectValidJwt(adminRegisterRes.body.token);
-    // doesn't work w/ before each, loses admin role somehow????
+    testAdminUser = await createAdminUser();
+    const adminRegisterRes = await request(app)
+      .post("/api/auth")
+      .send(testAdminUser);
+    testAdminAuthToken = adminRegisterRes.body.token;
+    expect(adminRegisterRes.status).toBe(200);
+    expectValidJwt(adminRegisterRes.body.token);
+    // doesn't work w/ before each for create franchise, create menu item loses admin role somehow????
   });
 
   test("login", async () => {
@@ -159,6 +158,7 @@ describe("pizza-service allows", () => {
 
   describe("franchise stuff", () => {
     let franchiseId;
+    let storeId;
 
     test("create franchise", async () => {
       const adminUser = await createAdminUser();
@@ -174,6 +174,34 @@ describe("pizza-service allows", () => {
         expect.objectContaining({ name: adminUser.name }),
       );
       franchiseId = createFranchiseRes.body.id;
+    });
+
+    test("create store", async () => {
+      const adminUser = await createAdminUser();
+      const loginRes = await request(app).put("/api/auth").send(adminUser);
+      const authToken = loginRes.body.token;
+
+      const createStoreRes = await request(app)
+        .post(`/api/franchise/${franchiseId}/store`)
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ franchiseId: franchiseId, name: adminUser.name + "'s store" });
+      expect(createStoreRes.status).toBe(200);
+      expect(createStoreRes.body).toEqual(
+        expect.objectContaining({ name: adminUser.name + "'s store" }),
+      );
+      storeId = createStoreRes.body.id;
+    });
+
+    test("delete store", async () => {
+      const adminUser = await createAdminUser();
+      const loginRes = await request(app).put("/api/auth").send(adminUser);
+      const authToken = loginRes.body.token;
+
+      const deleteStoreRes = await request(app)
+        .delete(`/api/franchise/${franchiseId}/store/${storeId}`)
+        .set("Authorization", `Bearer ${authToken}`);
+      expect(deleteStoreRes.status).toBe(200);
+      expect(deleteStoreRes.body).toEqual({ message: "store deleted" });
     });
 
     test("delete franchise", async () => {
