@@ -5,6 +5,7 @@ const testUser = { name: "pizza diner", email: "reg@test.com", password: "a" };
 let testUserAuthToken;
 let testAdminAuthToken;
 let testAdminUser;
+let bob;
 
 describe("pizza-service", () => {
   beforeEach(async () => {
