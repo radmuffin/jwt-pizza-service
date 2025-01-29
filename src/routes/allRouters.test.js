@@ -4,7 +4,8 @@ const app = require("../service");
 const testUser = { name: "pizza diner", email: "reg@test.com", password: "a" };
 let testUserAuthToken;
 let testAdminAuthToken;
-let testAdminUser;
+// let franchiseId;
+// let testAdminUser;
 
 describe("pizza-service allows", () => {
   beforeEach(async () => {
@@ -13,13 +14,14 @@ describe("pizza-service allows", () => {
     testUserAuthToken = registerRes.body.token;
     expectValidJwt(testUserAuthToken);
 
-    testAdminUser = await createAdminUser();
-    const adminRegisterRes = await request(app)
-      .post("/api/auth")
-      .send(testAdminUser);
-    testAdminAuthToken = adminRegisterRes.body.token;
-    expect(adminRegisterRes.status).toBe(200);
-    expectValidJwt(adminRegisterRes.body.token);
+    // testAdminUser = await createAdminUser();
+    // const adminRegisterRes = await request(app)
+    //   .post("/api/auth")
+    //   .send(testAdminUser);
+    // testAdminAuthToken = adminRegisterRes.body.token;
+    // expect(adminRegisterRes.status).toBe(200);
+    // expectValidJwt(adminRegisterRes.body.token);
+    // doesn't work w/ before each, loses admin role somehow????
   });
 
   test("login", async () => {
@@ -140,13 +142,51 @@ describe("pizza-service allows", () => {
     });
   });
 
-  test("create franchise", async () => {
+  test("try to create duplicate franchise", async () => {
+    const adminUser = await createAdminUser();
+    const loginRes = await request(app).put("/api/auth").send(adminUser);
+    const authToken = loginRes.body.token;
+
     const createFranchiseRes = await request(app)
       .post("/api/franchise")
-      .set("Authorization", `Bearer ${testAdminAuthToken}`)
-      .send({ admins: [testAdminUser] });
-    expect(createFranchiseRes.status).toBe(200);
-    expect(createFranchiseRes.body).toEqual(expect.any(Object));
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({ name: "pizzaPocket", admins: [{ email: adminUser.email }] });
+    expect(createFranchiseRes.status).toBe(500);
+    expect(createFranchiseRes.body.message).toEqual(
+      "Duplicate entry 'pizzaPocket' for key 'franchise.name'",
+    );
+  });
+
+  describe("franchise stuff", () => {
+    let franchiseId;
+
+    test("create franchise", async () => {
+      const adminUser = await createAdminUser();
+      const loginRes = await request(app).put("/api/auth").send(adminUser);
+      const authToken = loginRes.body.token;
+
+      const createFranchiseRes = await request(app)
+        .post("/api/franchise")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ name: adminUser.name, admins: [{ email: adminUser.email }] });
+      expect(createFranchiseRes.status).toBe(200);
+      expect(createFranchiseRes.body).toEqual(
+        expect.objectContaining({ name: adminUser.name }),
+      );
+      franchiseId = createFranchiseRes.body.id;
+    });
+
+    test("delete franchise", async () => {
+      const adminUser = await createAdminUser();
+      const loginRes = await request(app).put("/api/auth").send(adminUser);
+      const authToken = loginRes.body.token;
+
+      const deleteFranchiseRes = await request(app)
+        .delete(`/api/franchise/${franchiseId}`)
+        .set("Authorization", `Bearer ${authToken}`);
+      expect(deleteFranchiseRes.status).toBe(200);
+      expect(deleteFranchiseRes.body).toEqual({ message: "franchise deleted" });
+    });
   });
 });
 
