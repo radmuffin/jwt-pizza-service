@@ -5,6 +5,7 @@ const testUser = { name: "pizza diner", email: "reg@test.com", password: "a" };
 let testUserAuthToken;
 let testAdminAuthToken;
 let testAdminUser;
+let itemId;
 
 describe("pizza-service", () => {
   beforeEach(async () => {
@@ -83,6 +84,7 @@ describe("pizza-service", () => {
       .send(addMenuItemReq);
     expect(addMenuItemRes.status).toBe(200);
     expect(addMenuItemRes.body).toEqual(expect.any(Array));
+    itemId = addMenuItemRes.body[addMenuItemRes.body.length - 1].id;
   });
 
   test("get franchises", async () => {
@@ -156,27 +158,27 @@ describe("pizza-service", () => {
       storeId = createStoreRes.body.id;
     });
 
-    // test("create order", async () => {
-    //   // Need to fix so works for dummy database on github
-    //   const orderReq = {
-    //     franchiseId: 1,
-    //     storeId: 1,
-    //     items: [{ menuId: 1, description: "Veggie", price: 0.05 }],
-    //   };
-    //   const orderRes = await request(app)
-    //     .post("/api/order")
-    //     .set("Authorization", `Bearer ${testUserAuthToken}`)
-    //     .send(orderReq);
-    //   expect(orderRes.status).toBe(200);
-    //   expect(orderRes.body).toMatchObject({
-    //     order: {
-    //       franchiseId: 1,
-    //       storeId: 1,
-    //       items: [{ menuId: 1, description: "Veggie", price: 0.05 }],
-    //     },
-    //   });
-    //   expectValidJwt(orderRes.body.jwt);
-    // });
+    test("create order", async () => {
+      // Need to fix so works for dummy database on github
+      const orderReq = {
+        franchiseId: franchiseId,
+        storeId: storeId,
+        items: [{ menuId: itemId, description: "VeggieSauron", price: 1.0 }],
+      };
+      const orderRes = await request(app)
+        .post("/api/order")
+        .set("Authorization", `Bearer ${testUserAuthToken}`)
+        .send(orderReq);
+      expect(orderRes.status).toBe(200);
+      expect(orderRes.body).toMatchObject({
+        order: {
+          franchiseId: franchiseId,
+          storeId: storeId,
+          items: [{ menuId: itemId, description: "VeggieSauron", price: 1.0 }],
+        },
+      });
+      expectValidJwt(orderRes.body.jwt);
+    });
 
     test("delete store", async () => {
       const adminUser = await createAdminUser();
