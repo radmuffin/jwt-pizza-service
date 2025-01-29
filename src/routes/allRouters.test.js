@@ -49,27 +49,6 @@ describe("pizza-service", () => {
     expect(logoutRes.body).toMatchObject({ message: "logout successful" });
   });
 
-  test("create order", async () => {
-    const orderReq = {
-      franchiseId: 1,
-      storeId: 1,
-      items: [{ menuId: 1, description: "Veggie", price: 0.05 }],
-    };
-    const orderRes = await request(app)
-      .post("/api/order")
-      .set("Authorization", `Bearer ${testUserAuthToken}`)
-      .send(orderReq);
-    expect(orderRes.status).toBe(200);
-    expect(orderRes.body).toMatchObject({
-      order: {
-        franchiseId: 1,
-        storeId: 1,
-        items: [{ menuId: 1, description: "Veggie", price: 0.05 }],
-      },
-    });
-    expectValidJwt(orderRes.body.jwt);
-  });
-
   test("get menu", async () => {
     const menuRes = await request(app)
       .get("/api/order/menu")
@@ -141,21 +120,6 @@ describe("pizza-service", () => {
     });
   });
 
-  // test("try to create duplicate franchise", async () => {
-  //   const adminUser = await createAdminUser();
-  //   const loginRes = await request(app).put("/api/auth").send(adminUser);
-  //   const authToken = loginRes.body.token;
-  //
-  //   const createFranchiseRes = await request(app)
-  //     .post("/api/franchise")
-  //     .set("Authorization", `Bearer ${authToken}`)
-  //     .send({ name: "pizzaPocket", admins: [{ email: adminUser.email }] });
-  //   expect(createFranchiseRes.status).toBe(500);
-  //   expect(createFranchiseRes.body.message).toEqual(
-  //     "Duplicate entry 'pizzaPocket' for key 'franchise.name'",
-  //   );
-  // });
-
   describe("franchise stuff", () => {
     let franchiseId;
     let storeId;
@@ -190,6 +154,28 @@ describe("pizza-service", () => {
         expect.objectContaining({ name: adminUser.name + "'s store" }),
       );
       storeId = createStoreRes.body.id;
+    });
+
+    test("create order", async () => {
+      // Need to fix so works for dummy database on github
+      const orderReq = {
+        franchiseId: 1,
+        storeId: 1,
+        items: [{ menuId: 1, description: "Veggie", price: 0.05 }],
+      };
+      const orderRes = await request(app)
+        .post("/api/order")
+        .set("Authorization", `Bearer ${testUserAuthToken}`)
+        .send(orderReq);
+      expect(orderRes.status).toBe(200);
+      expect(orderRes.body).toMatchObject({
+        order: {
+          franchiseId: 1,
+          storeId: 1,
+          items: [{ menuId: 1, description: "Veggie", price: 0.05 }],
+        },
+      });
+      expectValidJwt(orderRes.body.jwt);
     });
 
     test("delete store", async () => {
