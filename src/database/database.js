@@ -16,7 +16,7 @@ class DB {
       const rows = await this.query(
         connection,
         `SELECT *
-                                                       FROM menu`,
+                 FROM menu`,
       );
       return rows;
     } finally {
@@ -30,8 +30,8 @@ class DB {
       const addResult = await this.query(
         connection,
         `INSERT INTO menu (title, description, image, price)
-                                                            VALUES (?, ?, ?,
-                                                                    ?)`,
+                 VALUES (?, ?, ?,
+                         ?)`,
         [item.title, item.description, item.image, item.price],
       );
       return { ...item, id: addResult.insertId };
@@ -48,8 +48,8 @@ class DB {
       const userResult = await this.query(
         connection,
         `INSERT INTO user (name, email, password)
-                                                             VALUES (?, ?,
-                                                                     ?)`,
+                 VALUES (?, ?,
+                         ?)`,
         [user.name, user.email, hashedPassword],
       );
       const userId = userResult.insertId;
@@ -65,7 +65,7 @@ class DB {
             await this.query(
               connection,
               `INSERT INTO userRole (userId, role, objectId)
-                                                      VALUES (?, ?, ?)`,
+                             VALUES (?, ?, ?)`,
               [userId, role.role, franchiseId],
             );
             break;
@@ -74,7 +74,7 @@ class DB {
             await this.query(
               connection,
               `INSERT INTO userRole (userId, role, objectId)
-                                                      VALUES (?, ?, ?)`,
+                             VALUES (?, ?, ?)`,
               [userId, role.role, 0],
             );
             break;
@@ -93,8 +93,8 @@ class DB {
       const userResult = await this.query(
         connection,
         `SELECT *
-                                                             FROM user
-                                                             WHERE email = ?`,
+                 FROM user
+                 WHERE email = ?`,
         [email],
       );
       const user = userResult[0];
@@ -105,8 +105,8 @@ class DB {
       const roleResult = await this.query(
         connection,
         `SELECT *
-                                                             FROM userRole
-                                                             WHERE userId = ?`,
+                 FROM userRole
+                 WHERE userId = ?`,
         [user.id],
       );
       const roles = roleResult.map((r) => {
@@ -149,7 +149,7 @@ class DB {
       await this.query(
         connection,
         `INSERT INTO auth (token, userId)
-                                          VALUES (?, ?)`,
+                 VALUES (?, ?)`,
         [token, userId],
       );
     } finally {
@@ -164,8 +164,8 @@ class DB {
       const authResult = await this.query(
         connection,
         `SELECT userId
-                                                             FROM auth
-                                                             WHERE token = ?`,
+                 FROM auth
+                 WHERE token = ?`,
         [token],
       );
       return authResult.length > 0;
@@ -181,8 +181,8 @@ class DB {
       await this.query(
         connection,
         `DELETE
-                                          FROM auth
-                                          WHERE token = ?`,
+                 FROM auth
+                 WHERE token = ?`,
         [token],
       );
     } finally {
@@ -197,17 +197,17 @@ class DB {
       const orders = await this.query(
         connection,
         `SELECT id, franchiseId, storeId, date
-                                                         FROM dinerOrder
-                                                         WHERE dinerId=? LIMIT ${offset}
-                                                             , ${config.db.listPerPage}`,
+                 FROM dinerOrder
+                 WHERE dinerId=? LIMIT ${offset}
+                     , ${config.db.listPerPage}`,
         [user.id],
       );
       for (const order of orders) {
         let items = await this.query(
           connection,
           `SELECT id, menuId, description, price
-                                                          FROM orderItem
-                                                          WHERE orderId = ?`,
+                     FROM orderItem
+                     WHERE orderId = ?`,
           [order.id],
         );
         order.items = items;
@@ -224,8 +224,8 @@ class DB {
       const orderResult = await this.query(
         connection,
         `INSERT INTO dinerOrder (dinerId, franchiseId, storeId, date)
-                                                              VALUES (?, ?, ?,
-                                                                      now())`,
+                 VALUES (?, ?, ?,
+                         now())`,
         [user.id, order.franchiseId, order.storeId],
       );
       const orderId = orderResult.insertId;
@@ -234,7 +234,7 @@ class DB {
         await this.query(
           connection,
           `INSERT INTO orderItem (orderId, menuId, description, price)
-                                              VALUES (?, ?, ?, ?)`,
+                     VALUES (?, ?, ?, ?)`,
           [orderId, menuId, item.description, item.price],
         );
       }
@@ -251,8 +251,8 @@ class DB {
         const adminUser = await this.query(
           connection,
           `SELECT id, name
-                                                                FROM user
-                                                                WHERE email = ?`,
+                     FROM user
+                     WHERE email = ?`,
           [admin.email],
         );
         if (adminUser.length === 0) {
@@ -268,7 +268,7 @@ class DB {
       const franchiseResult = await this.query(
         connection,
         `INSERT INTO franchise (name)
-                                                                  VALUES (?)`,
+                 VALUES (?)`,
         [franchise.name],
       );
       franchise.id = franchiseResult.insertId;
@@ -277,7 +277,7 @@ class DB {
         await this.query(
           connection,
           `INSERT INTO userRole (userId, role, objectId)
-                                              VALUES (?, ?, ?)`,
+                     VALUES (?, ?, ?)`,
           [admin.id, Role.Franchisee, franchise.id],
         );
       }
@@ -296,22 +296,22 @@ class DB {
         await this.query(
           connection,
           `DELETE
-                                              FROM store
-                                              WHERE franchiseId = ?`,
+                     FROM store
+                     WHERE franchiseId = ?`,
           [franchiseId],
         );
         await this.query(
           connection,
           `DELETE
-                                              FROM userRole
-                                              WHERE objectId = ?`,
+                     FROM userRole
+                     WHERE objectId = ?`,
           [franchiseId],
         );
         await this.query(
           connection,
           `DELETE
-                                              FROM franchise
-                                              WHERE id = ?`,
+                     FROM franchise
+                     WHERE id = ?`,
           [franchiseId],
         );
         await connection.commit();
@@ -330,7 +330,7 @@ class DB {
       const franchises = await this.query(
         connection,
         `SELECT id, name
-                                                             FROM franchise`,
+                 FROM franchise`,
       );
       for (const franchise of franchises) {
         if (authUser?.isRole(Role.Admin)) {
@@ -339,8 +339,8 @@ class DB {
           franchise.stores = await this.query(
             connection,
             `SELECT id, name
-                                                                     FROM store
-                                                                     WHERE franchiseId = ?`,
+                         FROM store
+                         WHERE franchiseId = ?`,
             [franchise.id],
           );
         }
@@ -357,9 +357,9 @@ class DB {
       let franchiseIds = await this.query(
         connection,
         `SELECT objectId
-                                                             FROM userRole
-                                                             WHERE role = 'franchisee'
-                                                               AND userId = ?`,
+                 FROM userRole
+                 WHERE role = 'franchisee'
+                   AND userId = ?`,
         [userId],
       );
       if (franchiseIds.length === 0) {
@@ -370,8 +370,8 @@ class DB {
       const franchises = await this.query(
         connection,
         `SELECT id, name
-                                                             FROM franchise
-                                                             WHERE id in (${franchiseIds.join(",")})`,
+                 FROM franchise
+                 WHERE id in (${franchiseIds.join(",")})`,
       );
       for (const franchise of franchises) {
         await this.getFranchise(franchise);
@@ -388,10 +388,10 @@ class DB {
       franchise.admins = await this.query(
         connection,
         `SELECT u.id, u.name, u.email
-                                                             FROM userRole AS ur
-                                                                      JOIN user AS u ON u.id = ur.userId
-                                                             WHERE ur.objectId = ?
-                                                               AND ur.role = 'franchisee'`,
+                 FROM userRole AS ur
+                          JOIN user AS u ON u.id = ur.userId
+                 WHERE ur.objectId = ?
+                   AND ur.role = 'franchisee'`,
         [franchise.id],
       );
 
@@ -418,7 +418,7 @@ class DB {
       const insertResult = await this.query(
         connection,
         `INSERT INTO store (franchiseId, name)
-                                                               VALUES (?, ?)`,
+                 VALUES (?, ?)`,
         [franchiseId, store.name],
       );
       return { id: insertResult.insertId, franchiseId, name: store.name };
@@ -433,9 +433,9 @@ class DB {
       await this.query(
         connection,
         `DELETE
-                                          FROM store
-                                          WHERE franchiseId = ?
-                                            AND id = ?`,
+                 FROM store
+                 WHERE franchiseId = ?
+                   AND id = ?`,
         [franchiseId, storeId],
       );
     } finally {
@@ -463,8 +463,8 @@ class DB {
   async getID(connection, key, value, table) {
     const [rows] = await connection.execute(
       `SELECT id
-                                                 FROM ${table}
-                                                 WHERE ${key} = ?`,
+             FROM ${table}
+             WHERE ${key} = ?`,
       [value],
     );
     if (rows.length > 0) {
@@ -516,6 +516,7 @@ class DB {
         }
 
         if (!dbExists) {
+          // TODO this isn't working :|||
           const defaultAdmin = {
             name: "常用名字",
             email: "a@jwt.com",
@@ -541,8 +542,8 @@ class DB {
   async checkDatabaseExists(connection) {
     const [rows] = await connection.execute(
       `SELECT SCHEMA_NAME
-                                                 FROM INFORMATION_SCHEMA.SCHEMATA
-                                                 WHERE SCHEMA_NAME = ?`,
+             FROM INFORMATION_SCHEMA.SCHEMATA
+             WHERE SCHEMA_NAME = ?`,
       [config.db.connection.database],
     );
     return rows.length > 0;
