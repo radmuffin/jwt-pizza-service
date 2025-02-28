@@ -516,14 +516,13 @@ class DB {
         }
 
         if (!dbExists) {
-          // TODO this isn't working :|||
           const defaultAdmin = {
             name: "常用名字",
             email: "a@jwt.com",
             password: "admin",
             roles: [{ role: Role.Admin }],
           };
-          await this.addUser(defaultAdmin);
+          this.addUser(defaultAdmin); // vital that we there's no await here  (awaiting it's own completion)
         }
       } finally {
         connection.end();
