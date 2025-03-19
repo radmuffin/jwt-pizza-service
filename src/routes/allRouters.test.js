@@ -1,5 +1,6 @@
 const request = require("supertest");
 const app = require("../service");
+const metrics = require("../metrics.js");
 
 const testUser = { name: "pizza diner", email: "reg@test.com", password: "a" };
 let testUserAuthToken;
@@ -22,6 +23,10 @@ describe("pizza-service", () => {
     expect(adminRegisterRes.status).toBe(200);
     expectValidJwt(adminRegisterRes.body.token);
     // doesn't work w/ before each for create franchise, create menu item loses admin role somehow????
+  });
+
+  afterAll(async () => {
+    metrics.killMetrics();
   });
 
   test("login", async () => {

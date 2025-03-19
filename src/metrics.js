@@ -82,7 +82,7 @@ function pizzaLatencyMetric(latency) {
 }
 
 // This will periodically send metrics to Grafana
-setInterval(() => {
+const sender = setInterval(() => {
   // http requests
   Object.keys(requests).forEach((endpoint) => {
     sendMetricToGrafana("requests", requests[endpoint], { endpoint });
@@ -128,6 +128,10 @@ setInterval(() => {
     pizzaLatencies = [];
   }
 }, 10000);
+
+function killMetrics() {
+  clearInterval(sender);
+}
 
 function sendMetric(metric, metricName) {
   fetch(`${config.metrics.url}`, {
@@ -237,4 +241,5 @@ module.exports = {
   pizzaCountMetric,
   revenueMetric,
   pizzaLatencyMetric,
+  killMetrics,
 };
