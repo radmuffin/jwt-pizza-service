@@ -4,6 +4,7 @@ const config = require("../config.js");
 const { StatusCodeError } = require("../endpointHelper.js");
 const { Role } = require("../model/model.js");
 const dbModel = require("./dbModel.js");
+const { authMetric } = require("../metrics.js");
 
 class DB {
   constructor() {
@@ -99,8 +100,12 @@ class DB {
       );
       const user = userResult[0];
       if (!user || !(await bcrypt.compare(password, user.password))) {
+        // user not found or password incorrect add to metric
+        authMetric(false);
         throw new StatusCodeError("unknown user", 404);
       }
+      // user found and password correct add to metric
+      authMetric(true);
 
       const roleResult = await this.query(
         connection,
