@@ -63,6 +63,12 @@ jobs:
               url: '${{ secrets.METRICS_URL }}',
               apiKey: '${{ secrets.METRICS_API_KEY }}',
             },
+            logging:    {
+              source: 'jwt-pizza-service',
+              userId: ${{ secrets.LOGGING_USER_ID }},
+              url: '${{ secrets.LOGGING_URL }}',
+              apiKey: '${{ secrets.LOGGING_API_KEY }}',
+            },
           };" > src/config.js
 
       - name: Tests
