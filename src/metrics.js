@@ -133,7 +133,7 @@ function killMetrics() {
   clearInterval(sender);
 }
 
-function sendMetric(metric, metricName) {
+function sendMetric(metric) {
   fetch(`${config.metrics.url}`, {
     method: "POST",
     body: JSON.stringify(metric),
@@ -146,7 +146,7 @@ function sendMetric(metric, metricName) {
       if (!response.ok) {
         console.error("Failed to push metrics data to Grafana");
       } else {
-        console.log(`Pushed ${metricName}`);
+        // console.log(`Pushed ${metricName}`);
       }
     })
     .catch((error) => {
@@ -186,7 +186,7 @@ function sendPercentageMetric(metricName, metricValue) {
     ],
   };
 
-  sendMetric(metric, metricName);
+  sendMetric(metric);
 }
 
 function sendMetricToGrafana(metricName, metricValue, attributes) {
@@ -229,7 +229,7 @@ function sendMetricToGrafana(metricName, metricValue, attributes) {
     );
   });
 
-  sendMetric(metric, metricName);
+  sendMetric(metric);
 }
 
 module.exports = {

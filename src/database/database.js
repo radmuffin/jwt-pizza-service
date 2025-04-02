@@ -4,7 +4,7 @@ const config = require("../config.js");
 const { StatusCodeError } = require("../endpointHelper.js");
 const { Role } = require("../model/model.js");
 const dbModel = require("./dbModel.js");
-const { authMetric } = require("../metrics.js");
+const { authMetric, updateUser } = require("../metrics.js");
 const Logger = require("pizza-logger");
 const logger = new Logger(config);
 
@@ -108,6 +108,7 @@ class DB {
       }
       // user found and password correct add to metric
       authMetric(true);
+      updateUser(email);
 
       const roleResult = await this.query(
         connection,
