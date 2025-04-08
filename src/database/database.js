@@ -130,19 +130,25 @@ class DB {
   async updateUser(userId, email, password) {
     const connection = await this.getConnection();
     try {
+      const updates = [];
       const params = [];
+
       if (password) {
         const hashedPassword = await bcrypt.hash(password, 10);
-        params.push(`password='${hashedPassword}'`);
+        updates.push("password = ?");
+        params.push(hashedPassword);
       }
       if (email) {
-        params.push(`email='${email}'`);
+        updates.push("email = ?");
+        params.push(email);
       }
-      if (params.length > 0) {
+
+      if (updates.length > 0) {
         const query = `UPDATE user
-                               SET ${params.join(", ")}
-                               WHERE id = ${userId}`;
-        await this.query(connection, query);
+                               SET ${updates.join(", ")}
+                               WHERE id = ?`;
+        params.push(userId);
+        await this.query(connection, query, params);
       }
       return this.getUser(email, password);
     } finally {
@@ -379,7 +385,8 @@ class DB {
         connection,
         `SELECT id, name
                  FROM franchise
-                 WHERE id in (${franchiseIds.join(",")})`,
+                 WHERE id IN (${franchiseIds.map(() => "?").join(",")})`,
+        franchiseIds,
       );
       for (const franchise of franchises) {
         await this.getFranchise(franchise);
@@ -470,6 +477,13 @@ class DB {
   }
 
   async getID(connection, key, value, table) {
+    const allowedTables = ["menu", "user", "franchise"];
+    const allowedKeys = ["id", "name"];
+
+    if (!allowedTables.includes(table) || !allowedKeys.includes(key)) {
+      throw new Error("Invalid table or key");
+    }
+
     const [rows] = await connection.execute(
       `SELECT id
              FROM ${table}
